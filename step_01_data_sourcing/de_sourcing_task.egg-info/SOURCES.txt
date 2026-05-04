@@ -1,0 +1,5 @@
+de_sourcing_task.egg-info/PKG-INFO
+de_sourcing_task.egg-info/SOURCES.txt
+de_sourcing_task.egg-info/dependency_links.txt
+de_sourcing_task.egg-info/entry_points.txt
+de_sourcing_task.egg-info/top_level.txt

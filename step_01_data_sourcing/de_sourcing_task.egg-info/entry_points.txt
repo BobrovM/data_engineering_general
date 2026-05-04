@@ -1,0 +1,2 @@
+[console_scripts]
+de_source = de_sourcing_task.cli:main

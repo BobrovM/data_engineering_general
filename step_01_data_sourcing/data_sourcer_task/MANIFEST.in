@@ -1,0 +1,4 @@
+include *api_url.txt
+include *requirements.txt
+include *README.md
+graft package_data_sourcer_task
