@@ -6,24 +6,25 @@ function or stuff. This is literally how the learning process works.
 q: Is this code good?
 a: I DON'T KNOW. I'll ask my friend to feed it to Claude
 
-Also this would be interesting to do in Bash for AD-HOC, but a bit too complecated for me atm.
+Also, this would be interesting to do in Bash for AD-HOC, but it's a bit too complicated for me atm.
 """
 
 
 import httpx
-import os
+# import os
 import os.path 
 import asyncio # gotta learn the asyncio lib
 import csv
 # from csvkit import convert
 from dotenv import load_dotenv
 
-# dotenv was added through VSCode copilot, had troubles with accessing system env vars and then .env, asked llm/ai, didn't want to share my so sensitive api key.
+# dotenv was added through VSCode copilot, had troubles with accessing system env vars and then .env, asked LLM/AI,
+# didn't want to share my so sensitive api key.
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
 
 
-### Looks like pirated course API got shutdown before 2026.05.05, or it is temp unavailable at this moment, idk. 2026.05.04 it was fine.
-### Changing project to CoinGecko MR Beast cryptoscams for fun and funny training. But it's not 2 gigs...
+### Looks like pirated course API got shut down before 2026.05.05, or it is temp unavailable at this moment, idk.
+### 2026.05.04 it was fine. Changing project to CoinGecko MR Beast cryptoscams for fun and funny training. But it's not 2 gigs...
 """
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -46,7 +47,14 @@ header = {"x-cg-demo-api-key": api_key}
 # can it bug out and make a duplicate?????
 # and 5 minutes after I did it i found the solution in pdf files of the pirated courses
 # TODO needs pagination, learn pagination
-async def api_data_geciever():
+async def api_data_receiver():
+    """ Get data from hardcoded (maybe for now) API.
+    Writes final_data.csv in a directory where the python script was run.
+    If API returns 429 too many requests, the script sleeps for 3 minutes.
+    Else if returns any other error it just dies.
+
+    Even this is a try of doing asynchronous code, I need more understanding of how does it work.
+    """
     # Force UTF-8, got UnicodeEncodeError: 'charmap' codec can't encode character '\u0f3c' in position 6: character maps to <undefined>
     with open('final_data.csv', 'w', encoding='utf-8') as file:    
         fieldnames = ["id", "symbol", "name"]
@@ -71,13 +79,14 @@ async def api_data_geciever():
 
                 except httpx.TimeoutException:
                     print("uhoh")
-                    # limited to 5 timeouts to ford escape infinite tineouts
+                    # limited to 5 timeouts to Ford Escape infinite timeouts
                     tries+=1
                     if tries >= 5: break
 
                 except httpx.HTTPStatusError as exc:
                     if exc.response.status_code == 429:
-                        # Waiting 180 secs before retrying since task requirment. Buuuuuuuuut the original api is down, just putting it for God's sake.
+                        # Waiting 180 secs before retrying since task requirement. Buuuuuuuuut the original api is down,
+                        # just putting it for God's sake.
                         await asyncio.sleep(180)
                         continue
                     else:
@@ -85,9 +94,18 @@ async def api_data_geciever():
                         raise
 
 
+# python module run
 async def main():
-    #idk why
-    await api_data_geciever()
+    # idk why
+    await api_data_receiver()
 
+# bash run
+def run_cli():
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nStopping data sourcing...")
 
-asyncio.run(main())
+# local run
+if "__main__" == __name__:
+    asyncio.run(main())

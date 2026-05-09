@@ -23,5 +23,5 @@ if __name__ == "__main__":
         packages=find_packages(),
         install_requires=find_requirements(),
         include_package_data=True,
-        entry_points={'console_scripts': ['de_source = de_sourcing_task.cli:main']}
+        entry_points={'console_scripts': ['de_source_data = package_data_sourcer_task.api_data_sourcer:run_cli']}
     )
