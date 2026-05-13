@@ -18,7 +18,7 @@ def find_requirements():
 if __name__ == "__main__":
     setup(
         name="de_sourcing_task",
-        version="0.0.1",
+        version="0.0.2",
         description="The sourcing is tasked to be completed as a separate installable package",
         packages=find_packages(),
         install_requires=find_requirements(),

@@ -11,6 +11,7 @@ Also, this would be interesting to do in Bash for AD-HOC, but it's a bit too com
 
 
 import httpx
+import json
 # import os
 import os.path 
 import asyncio # gotta learn the asyncio lib
@@ -19,66 +20,44 @@ from dotenv import load_dotenv
 
 # dotenv was added through VSCode copilot, had troubles with accessing system env vars and then .env, asked LLM/AI,
 # didn't want to share my so sensitive api key.
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
+#load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
 
 
-### Looks like pirated course API got shut down before 2026.05.05, or it is temp unavailable at this moment, idk.
-### 2026.05.04 it was fine. Changing project to CoinGecko MR Beast cryptoscams for fun and funny training. But it's not 2 gigs...
-### Opened on 2026.05.11, it was fine. 2026.05.12 it is dead.
-"""
-dir_path = os.path.dirname(os.path.realpath(__file__))
+### 2026.05.13 the api is back live
+#dir_path = os.path.dirname(os.path.realpath(__file__))
 
-address = "";
-with open('{0}/api_url.txt'.format(dir_path), 'r') as file:
-    address = file.readline()
-"""
+#address = ""
+#with open('{0}/api_url.txt'.format(dir_path), 'r') as file:
+    #address = file.readline()
 
-api_key = os.getenv('CoinGecko_OfficeGuy_API')
-#address = "https://api.coingecko.com/api/v3/coins/list"
-address = "https://api.coingecko.com/api/v3/coins/markets"
-header = {"x-cg-demo-api-key": api_key}
+#address += address + "/api/v1/logs"
 
-# async def was AI suggestion, had troubles with await, I need to study asyncio, interested if each response is a unique callback
-# and 5 minutes after I did it i found the solution in pdf files of the pirated courses
-# TODO needs pagination, learn pagination
+address = "http://5.159.103.79:4000/api/v1/logs"
+print(address)
+
+
+# get the data
 async def api_data_receiver():
     """ Get data from hardcoded (maybe for now) API.
-    Writes final_data.csv in a directory where the python script was run.
+    Writes customs_data.csv in a directory where the python script was run.
     If API returns 429 too many requests, the script sleeps for 3 minutes.
     Else if returns any other error it just dies.
 
     Even this is a try of doing asynchronous code, I need more understanding of how does it work.
     """
     # Force UTF-8, got UnicodeEncodeError: 'charmap' codec can't encode character '\u0f3c' in position 6: character maps to <undefined>
-    with open('coingecko_coins_markets_data.csv', 'w', encoding='utf-8') as file:
-        #fieldnames = ["id", "symbol", "name"]
+    with open('customs_data.csv', 'w', encoding='utf-8') as file:
         fieldnames = [
-            'id',
-            'symbol',
-            'name',
-            'image',
-            'current_price',
-            'market_cap',
-            'market_cap_rank',
-            'fully_diluted_valuation',
-            'total_volume',
-            'high_24h',
-            'low_24h',
-            'price_change_24h',
-            'price_change_percentage_24h',
-            'market_cap_change_24h',
-            'market_cap_change_percentage_24h',
-            'circulating_supply',
-            'total_supply',
-            'max_supply',
-            'ath',
-            'ath_change_percentage',
-            'ath_date',
-            'atl',
-            'atl_change_percentage',
-            'atl_date',
-            'roi',
-            'last_updated'
+            'code',
+            'country',
+            'direction',
+            'district',
+            'measure',
+            'month',
+            'netto',
+            'quantity',
+            'region',
+            'value'
         ]
 
         writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter="\t")
@@ -87,36 +66,48 @@ async def api_data_receiver():
 
         async with httpx.AsyncClient() as client:
             tries = 0
-            # in case original API will go back up. But it is not known if it clearly has pagination params.
             page = 1
 
             while True:
                 try:
-                    # Getting cryptoscams lists
-                    # params will work if API has obvious page and per_page. When the needed API will go up, we will see
-                    # and fix all that
                     q_params = {
                         "page": page,
-                        "per_page": 200,
-                        "vs_currency": "usd"
+                        "per_page": 200
                     }
 
-                    response = await client.get(address, headers=header, params=q_params)
+                    response = await client.get(address, params=q_params)
                     response.raise_for_status()
 
-                    json_response = response.json()
+                    # checkers everything is fine and not empty
+                    print(response.status_code)
+                    print(response.headers.get('content-type'))
 
+                    # page checker
                     print(page)
-                    print(json_response)
 
-                    if not json_response:
-                        print("Pages ended")
+                    # try to open json
+                    try:
+                        json_response = response.json()
+                        print(json_response["items"])
+
+                        if not json_response:
+                            print("Pages ended")
+                            break
+
+                        if  not json_response["items"]:
+                            print("Data ended")
+                            break
+
+                        # incoming json data from customs API was writen with an empy row each odd row, bizarre
+                        writer.writerows(json_response["items"])
+
+                    # if not json and is text or html
+                    except json.decoder.JSONDecodeError:
+                        text_response = response.text
+                        print(text_response)
                         break
 
-                    #for row in json_response:
-                    writer.writerows(json_response)
-
-                    # increase page and reset tries
+                    # increase page and reset tries since the try was successful
                     page += 1
                     tries = 0
 
