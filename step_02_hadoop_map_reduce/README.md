@@ -14,5 +14,5 @@ The contains are:
 * test runs with TXT;
 
 
-##### As mentioned earlier, as of 2nd of July 2026, the code is getting slowly fixed, searching for solution similar to **stdin.reconfigure**
+##### done the code descriptons. Now the part with history aggregations is left.
 
