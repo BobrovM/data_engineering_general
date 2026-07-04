@@ -5,7 +5,7 @@
 ###### Contains:
 
 1. Python data ingestion
-2. Hadoop MapReduce (as of 02 July 2026 is in fixing state, Hadoop doesn't like 'sys.stdin.reconfigure(encoding='cp866')')
+2. Hadoop MapReduce (as of 04 July 2026 got code descs done. Now the main part.)
 
 
 
