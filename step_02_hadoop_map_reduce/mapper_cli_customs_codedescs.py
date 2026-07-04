@@ -1,10 +1,18 @@
+#!/usr/bin/env python3
+
 import sys
 import csv
 
 # TNVED3 is encoded in cp866. The only other encoding which read this file was 1125.
-sys.stdin.reconfigure(encoding='cp866')
+### DOES NOT WORK IN HADOOP
+# sys.stdin.reconfigure(encoding='cp866')
+# fixed by making a decoded copy of TNVED3
+filein = sys.stdin
+
 # this is a mapper that expects CSV file input from BASH command line
-reader = csv.reader(sys.stdin, delimiter='|')
+# reader = csv.reader(sys.stdin, delimiter='|')
+reader = csv.reader(filein, delimiter='|')
+
 # maybe there is a more efficient way to skip first row with headers
 header = next(reader)
 # category code (4 digits) + category description + year, since reducing will put out only the biggest year
