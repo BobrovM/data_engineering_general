@@ -5,7 +5,7 @@ This folder contains solution to the task of:
 1. Make a code which Maps and Reduces the data from **STEP 1**
 2. Enrich the data with additional data from TNVED3
 3. Test locally
-4. Run on Hadoop YARN. (Right now issues with the decoding the cp866 with stdin.reconfigure in Hadoop)
+4. Run on Hadoop YARN. 
 
 The contains are:
 
@@ -14,5 +14,5 @@ The contains are:
 * test runs with TXT;
 
 
-##### done the code descriptons. Now the part with history aggregations is left.
+##### As of 2026-07-04, done the code descriptons. Now the part with history aggregations is left.
 
