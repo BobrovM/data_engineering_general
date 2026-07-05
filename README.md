@@ -5,7 +5,9 @@
 ###### Contains:
 
 1. Python data ingestion
-2. Hadoop MapReduce (as of 04 July 2026 got code descs done. Now the main part.)
+(Getting **customs import/export data** through REST API with pagination and possibility of 429 timeout)
+2. Hadoop MapReduce (as of 05 July 2026, its done.)
+(Map reducing, enriching with **TNVED3** and sorting data)
 
 
 
