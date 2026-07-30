@@ -39,7 +39,7 @@ services:
 # ========== step_02_hadoop_map_reduce
 # 2. hdfs-namenode
   hdfs-namenode:
-    image: apache/hadoop:3.4.0
+    image: apache/hadoop:3.5.0
     container_name: hdfs-namenode
     hostname: hdfs-namenode
     user: root
@@ -73,7 +73,7 @@ services:
 
 # 3. hdfs-datanode
   hdfs-datanode:
-    image: apache/hadoop:3.4.0
+    image: apache/hadoop:3.5.0
     container_name: hdfs-datanode
     hostname: hdfs-datanode
     user: root
@@ -101,7 +101,7 @@ services:
 
 # 4. yarn-resourcemanager
   yarn-resourcemanager:
-    image: apache/hadoop:3.4.0
+    image: apache/hadoop:3.5.0
     container_name: yarn-resourcemanager
     hostname: yarn-resourcemanager
     user: root
@@ -140,7 +140,7 @@ services:
 
 # 5. yarn-nodemanager
   yarn-nodemanager:
-    image: apache/hadoop:3.4.0
+    image: apache/hadoop:3.5.0
     container_name: yarn-nodemanager
     hostname: yarn-nodemanager
     user: root

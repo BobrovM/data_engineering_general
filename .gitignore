@@ -26,3 +26,5 @@ yarn-error.log*
 # Gemini suggestion
 .DS_Store
 Thumbs.db
+
+customs_data.csv

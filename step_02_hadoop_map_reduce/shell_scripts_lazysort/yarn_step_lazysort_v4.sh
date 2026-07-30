@@ -1,6 +1,4 @@
-# #!/bin/bash
-
-yarn jar $HADOOP_STREAMING_JAR \
+yarn jar /opt/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.5.0.jar \
 	-D mapreduce.map.log.level=DEBUG \
   	-D mapreduce.reduce.log.level=DEBUG \
 	-D stream.num.map.output.key.fields=1 \
@@ -10,5 +8,5 @@ yarn jar $HADOOP_STREAMING_JAR \
 	-output /task1/output_lazysort \
 	-mapper mapper_lazy_sort.py \
 	-reducer reducer_lazysort.py \
-	-file /mnt/d/data_engineering_general/step_02_hadoop_map_reduce/mapper_lazy_sort.py \
-	-file /mnt/d/data_engineering_general/step_02_hadoop_map_reduce/reducer_lazysort.py
+	-file /scripts/mapper_lazy_sort.py \
+	-file /scripts/reducer_lazysort.py
