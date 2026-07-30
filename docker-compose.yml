@@ -34,14 +34,15 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     command: >
-      sh -c "pip install -r requirements.txt"
+      sh -c "pip install -r /app/requirements.txt && tail -f /dev/null"
 
 # ========== step_02_hadoop_map_reduce
 # 2. hdfs-namenode
   hdfs-namenode:
-    image: apache/hadoop:3.5.0
+    image: apache/hadoop:3.4.0
     container_name: hdfs-namenode
     hostname: hdfs-namenode
+    user: root
     networks:
       - data-net
     ports:
@@ -55,21 +56,27 @@ services:
       - HDFS_NAMENODE_USER=root
       - HDFS_DATANODE_USER=root
       - HDFS_SECONDARYNAMENODE_USER=root
-      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+      - CORE-SITE.XML_fs.defaultFS=hdfs://hdfs-namenode:9000
       # it's local laptop run
-      - HDFS_CONF_dfs_replication=1
-      - HDFS_CONF_dfs_permissions_enabled=false
-    command: ["hdfs", "namenode"]
+      - HDFS-SITE.XML_dfs.replication=1
+      - HDFS-SITE.XML_dfs.permissions.enabled=false
+      - DFS_NAMENODE_NAME_DIR=/hadoop/dfs/name
+    command: >
+      bash -c "if [ ! -d /hadoop/dfs/name/current ]; then
+                   hdfs namenode -format -force -nonInteractive;
+                 fi && hdfs namenode"
     healthcheck:
       test: ["CMD", "hdfs", "dfsadmin", "-safemode", "wait"]
       interval: 60s
       retries: 5
+      start_period: 60s
 
 # 3. hdfs-datanode
   hdfs-datanode:
-    image: apache/hadoop:3.5.0
+    image: apache/hadoop:3.4.0
     container_name: hdfs-datanode
     hostname: hdfs-datanode
+    user: root
     networks:
       - data-net
     ports:
@@ -82,20 +89,22 @@ services:
       - HDFS_NAMENODE_USER=root
       - HDFS_DATANODE_USER=root
       - HDFS_SECONDARYNAMENODE_USER=root
-      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+      - CORE-SITE.XML_fs.defaultFS=hdfs://hdfs-namenode:9000
       # it's local laptop run
-      - HDFS_CONF_dfs_replication=1
-      - HDFS_CONF_dfs_permissions_enabled=false
+      - HDFS-SITE.XML_dfs.replication=1
+      - HDFS-SITE.XML_dfs.permissions.enabled=false
+      - DFS_DATANODE_DATA_DIR=/hadoop/dfs/data
     depends_on:
-      hdfs-namenode:
-        condition: service_healthy
+      - hdfs-namenode #:
+        #condition: service_healthy
     command: ["hdfs", "datanode"]
 
 # 4. yarn-resourcemanager
   yarn-resourcemanager:
-    image: apache/hadoop:3.5.0
+    image: apache/hadoop:3.4.0
     container_name: yarn-resourcemanager
     hostname: yarn-resourcemanager
+    user: root
     networks:
       - data-net
     ports:
@@ -108,37 +117,33 @@ services:
       - ./data_share:/data_share
       - ./step_02_hadoop_map_reduce:/scripts
     environment:
-      - HDFS_NAMENODE_USER=root
-      - HDFS_DATANODE_USER=root
-      - HDFS_SECONDARYNAMENODE_USER=root
+      - CORE-SITE.XML_fs.defaultFS=hdfs://hdfs-namenode:9000
+      - HDFS-SITE.XML_dfs.replication=1
+      - HDFS-SITE.XML_dfs.permissions.enabled=false
       - YARN_RESOURCEMANAGER_USER=root
-      - YARN_NODEMANAGER_USER=root
-      # HDFS connection
-      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
-      - HDFS_CONF_dfs_replication=1
-      - HDFS_CONF_dfs_permissions_enabled=false
       # ResourceManager settings
-      - YARN_CONF_yarn_resourcemanager_hostname=yarn-resourcemanager
-      - YARN_CONF_yarn_resourcemanager_address=yarn-resourcemanager:8032
-      - YARN_CONF_yarn_resourcemanager_scheduler_address=yarn-resourcemanager:8030
-      - YARN_CONF_yarn_resourcemanager_resource_tracker_address=yarn-resourcemanager:8031
-      - YARN_CONF_yarn_log___aggregation___enable=true
-      - YARN_CONF_yarn_nodemanager_aux_services=mapreduce_shuffle
-      - YARN_CONF_yarn_nodemanager_env_whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
-      - MAPRED_CONF_mapreduce_framework_name=yarn
-      - MAPRED_CONF_mapreduce_jobhistory_address=historyserver:10020
-      - MAPRED_CONF_mapreduce_jobhistory_webapp_address=historyserver:19888
-      - MAPRED_CONF_yarn_app_mapreduce_am_env_whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
+      - YARN-SITE.XML_yarn.resourcemanager.hostname=yarn-resourcemanager
+      - YARN-SITE.XML_yarn.resourcemanager.address=yarn-resourcemanager:8032
+      - YARN-SITE.XML_yarn.resourcemanager.scheduler.address=yarn-resourcemanager:8030
+      - YARN-SITE.XML_yarn.resourcemanager.resource-tracker.address=yarn-resourcemanager:8031
+      - YARN-SITE.XML_yarn.log-aggregation-enable=true
+      - YARN-SITE.XML_yarn.nodemanager.aux-services=mapreduce_shuffle
+      - MAPRED-SITE.XML_mapreduce.framework.name=yarn
+      - MAPRED-SITE.XML_mapreduce.jobhistory.address=historyserver:10020
+      - MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address=historyserver:19888
+      - YARN-SITE.XML_yarn.nodemanager.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
+      - MAPRED-SITE.XML_yarn.app.mapreduce.am.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
     depends_on:
-      hdfs-namenode:
-        condition: service_healthy
+      - hdfs-namenode #:
+        #condition: service_healthy
     command: ["yarn", "resourcemanager"]
 
 # 5. yarn-nodemanager
   yarn-nodemanager:
-    image: apache/hadoop:3.5.0
+    image: apache/hadoop:3.4.0
     container_name: yarn-nodemanager
     hostname: yarn-nodemanager
+    user: root
     networks:
       - data-net
     ports:
@@ -152,32 +157,34 @@ services:
       - HDFS_SECONDARYNAMENODE_USER=root
       - YARN_RESOURCEMANAGER_USER=root
       - YARN_NODEMANAGER_USER=root
+      - YARN_NODEMANAGER_LOCAL_DIRS=/hadoop/yarn/local
+      - YARN_NODEMANAGER_LOG_DIRS=/hadoop/yarn/logs
       # HDFS connection
-      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
-      - HDFS_CONF_dfs_replication=1
-      - HDFS_CONF_dfs_permissions_enabled=false
+      - CORE-SITE.XML_fs.defaultFS=hdfs://hdfs-namenode:9000
+      - HDFS-SITE.XML_dfs.replication=1
+      - HDFS-SITE.XML_dfs.permissions.enabled=false
       # YARN connection
-      - YARN_CONF_yarn_resourcemanager_hostname=yarn-resourcemanager
-      - YARN_CONF_yarn_resourcemanager_address=yarn-resourcemanager:8032
-      - YARN_CONF_yarn_resourcemanager_scheduler_address=yarn-resourcemanager:8030
-      - YARN_CONF_yarn_resourcemanager_resource_tracker_address=yarn-resourcemanager:8031
-      - YARN_CONF_yarn_log___aggregation___enable=true
-      - YARN_CONF_yarn_nodemanager_aux_services=mapreduce_shuffle
-      - YARN_CONF_yarn_nodemanager_env_whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
-      - MAPRED_CONF_mapreduce_framework_name=yarn
-      - MAPRED_CONF_mapreduce_jobhistory_address=historyserver:10020
-      - MAPRED_CONF_mapreduce_jobhistory_webapp_address=historyserver:19888
-      - MAPRED_CONF_yarn_app_mapreduce_am_env_whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
+      - YARN-SITE.XML_yarn.resourcemanager.hostname=yarn-resourcemanager
+      - YARN-SITE.XML_yarn.resourcemanager.address=yarn-resourcemanager:8032
+      - YARN-SITE.XML_yarn.resourcemanager.scheduler.address=yarn-resourcemanager:8030
+      - YARN-SITE.XML_yarn.resourcemanager.resource-tracker.address=yarn-resourcemanager:8031
+      - YARN-SITE.XML_yarn.log-aggregation-enable=true
+      - YARN-SITE.XML_yarn.nodemanager.aux-services=mapreduce_shuffle
+      - MAPRED-SITE.XML_mapreduce.framework.name=yarn
+      - MAPRED-SITE.XML_mapreduce.jobhistory.address=historyserver:10020
+      - MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address=historyserver:19888
+      - YARN-SITE.XML_yarn.nodemanager.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
+      - MAPRED-SITE.XML_yarn.app.mapreduce.am.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
     depends_on:
-      yarn-resourcemanager:
-        condition: service_started
-      hdfs-datanode:
-        condition: service_started
+      - yarn-resourcemanager #:
+        #condition: service_started
+      - hdfs-datanode #:
+        #condition: service_started
     command: ["yarn", "nodemanager"]
 
 # ========== step_03_spark_aggregation
 # 6. spark-jupyter
-spark-jupyter:
+  spark-jupyter:
     image: jupyter/pyspark-notebook:spark-3.5.0
     container_name: spark-jupyter
     hostname: spark-jupyter
@@ -195,8 +202,8 @@ spark-jupyter:
       # HDFS connection
       - SPARK_OPTS=--master local[*] --conf spark.hadoop.fs.defaultFS=hdfs://hdfs-namenode:9000
     depends_on:
-      hdfs-namenode:
-        condition: service_healthy
+      - hdfs-namenode #:
+        # condition: service_healthy
     command: >
       sh -c "start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''"
 
