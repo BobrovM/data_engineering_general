@@ -1,7 +1,7 @@
 # No version :3
 
 # !!!!!!!
-# ON 29.07.2026 IT WAS NOT TESTED
+# ON 30.07.2026 TESTED, FIXED, IS WORKING
 # !!!!!!!
 
 # Was made with the help of AI (lmm actually)
@@ -51,7 +51,7 @@ services:
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
       - ./data_share:/data_share                  
-      - ./step_02_hadoop_map_reduce:/scripts 
+      - ./step_02_hadoop_map_reduce:/scripts
     environment:
       - HDFS_NAMENODE_USER=root
       - HDFS_DATANODE_USER=root
@@ -60,7 +60,8 @@ services:
       # it's local laptop run
       - HDFS-SITE.XML_dfs.replication=1
       - HDFS-SITE.XML_dfs.permissions.enabled=false
-      - DFS_NAMENODE_NAME_DIR=/hadoop/dfs/name
+      - HDFS-SITE.XML_dfs.namenode.name.dir=/hadoop/dfs/name
+      - HDFS-SITE.XML_dfs.datanode.data.dir=/hadoop/dfs/data
     command: >
       bash -c "if [ ! -d /hadoop/dfs/name/current ]; then
                    hdfs namenode -format -force -nonInteractive;
@@ -93,7 +94,8 @@ services:
       # it's local laptop run
       - HDFS-SITE.XML_dfs.replication=1
       - HDFS-SITE.XML_dfs.permissions.enabled=false
-      - DFS_DATANODE_DATA_DIR=/hadoop/dfs/data
+    #  - HDFS-SITE.XML_dfs.namenode.name.dir=/hadoop/dfs/name
+      - HDFS-SITE.XML_dfs.datanode.data.dir=/hadoop/dfs/data
     depends_on:
       - hdfs-namenode #:
         #condition: service_healthy
@@ -157,8 +159,8 @@ services:
       - HDFS_SECONDARYNAMENODE_USER=root
       - YARN_RESOURCEMANAGER_USER=root
       - YARN_NODEMANAGER_USER=root
-      - YARN_NODEMANAGER_LOCAL_DIRS=/hadoop/yarn/local
-      - YARN_NODEMANAGER_LOG_DIRS=/hadoop/yarn/logs
+      - YARN-SITE.XML_yarn.nodemanager.local-dirs=/hadoop/yarn/local
+      - YARN-SITE.XML_yarn.nodemanager.log-dirs=/hadoop/yarn/logs
       # HDFS connection
       - CORE-SITE.XML_fs.defaultFS=hdfs://hdfs-namenode:9000
       - HDFS-SITE.XML_dfs.replication=1
@@ -173,8 +175,8 @@ services:
       - MAPRED-SITE.XML_mapreduce.framework.name=yarn
       - MAPRED-SITE.XML_mapreduce.jobhistory.address=historyserver:10020
       - MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address=historyserver:19888
-      - YARN-SITE.XML_yarn.nodemanager.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
-      - MAPRED-SITE.XML_yarn.app.mapreduce.am.env-whitelist="JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME"
+      - YARN-SITE.XML_yarn.nodemanager.env-whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
+      - MAPRED-SITE.XML_yarn.app.mapreduce.am.env-whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME
     depends_on:
       - yarn-resourcemanager #:
         #condition: service_started
@@ -199,7 +201,7 @@ services:
     environment:
       - JUPYTER_ENABLE_LAB=yes
       - GRANT_SUDO=yes
-      # HDFS connection
+      # HDFS connection (maybe remove, probs useless)
       - SPARK_OPTS=--master local[*] --conf spark.hadoop.fs.defaultFS=hdfs://hdfs-namenode:9000
     depends_on:
       - hdfs-namenode #:

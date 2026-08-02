@@ -6,7 +6,7 @@
 
 1. Python data ingestion
 (Getting **customs import/export data** through REST API with pagination and possibility of 429 timeout)
-2. Hadoop MapReduce (as of 05 July 2026, its done.)
+2. Hadoop Yarn MapReduce (as of 05 July 2026, its done.)
 (Map reducing, enriching with **TNVED3** and sorting data)
 
 
