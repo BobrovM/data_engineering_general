@@ -1,7 +1,7 @@
 # No version :3
 
 # !!!!!!!
-# ON 30.07.2026 TESTED, FIXED, IS WORKING
+# ON 10.08.2026 postgres and pgadmin are added
 # !!!!!!!
 
 # Was made with the help of AI (lmm actually)
@@ -16,6 +16,9 @@
 # 5. yarn-nodemanager
 # === spark pyspark jupyter notebook
 # 6. spark-jupyter
+# === postgres pgadmin4
+# 7. postgres
+# 8. pgadmin4
 # === net vol
 
 services:
@@ -208,6 +211,38 @@ services:
         # condition: service_healthy
     command: >
       sh -c "start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''"
+
+# ========== step_04_postgres_datamart
+# 7. postgres
+  db-postgres:
+    image: postgres:18.4
+    container_name: db-postgres
+    restart: always
+    networks:
+      - data-net
+    ports:
+    - "5432:5432"
+    volumes:
+      - ./step_04_postgres_datamart:/host_data
+      - ./data_share:/data_share
+    environment:
+    # IT'S A LOCAL TEST, NOT A PROD
+      - POSTGRES_USER=officeguy
+      - POSTGRES_PASSWORD=Test4321
+      - POSTGRES_DB=test_db         #this one probably will be dropped after tests
+# 8. pgadmin4
+  db-pgadmin4:
+    image: dpage/pgadmin4:9.17
+    container_name: db-pgadmin4
+    restart: always
+    networks:
+      - data-net
+    ports:
+    - "5080:80"
+    environment:
+    # IT'S A LOCAL TEST, NOT A PROD
+      - PGADMIN_DEFAULT_EMAIL=officeguy@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=Test4321
 
 # ========== Net Vol
 networks:
