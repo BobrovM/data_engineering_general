@@ -44,6 +44,7 @@ services:
   hdfs-namenode:
     image: apache/hadoop:3.5.0
     container_name: hdfs-namenode
+    restart: always
     hostname: hdfs-namenode
     user: root
     networks:
@@ -79,6 +80,7 @@ services:
   hdfs-datanode:
     image: apache/hadoop:3.5.0
     container_name: hdfs-datanode
+    restart: always
     hostname: hdfs-datanode
     user: root
     networks:
@@ -109,6 +111,7 @@ services:
     image: apache/hadoop:3.5.0
     container_name: yarn-resourcemanager
     hostname: yarn-resourcemanager
+    restart: always
     user: root
     networks:
       - data-net
@@ -147,6 +150,7 @@ services:
   yarn-nodemanager:
     image: apache/hadoop:3.5.0
     container_name: yarn-nodemanager
+    restart: always
     hostname: yarn-nodemanager
     user: root
     networks:
@@ -200,6 +204,7 @@ services:
       - "4040:4040"                   # Spark Web UI 
     volumes:
       - ./step_03_spark_aggregation:/home/jovyan/work/spark_aggregation           # I still don't understand who tf is Jovyan
+      - ./step_04_postgres_datamart:/home/jovyan/work/pg_preparation
       - ./data_share:/home/jovyan/work/data_share
     environment:
       - JUPYTER_ENABLE_LAB=yes
@@ -229,7 +234,8 @@ services:
     # IT'S A LOCAL TEST, NOT A PROD
       - POSTGRES_USER=officeguy
       - POSTGRES_PASSWORD=Test4321
-      - POSTGRES_DB=test_db         #this one probably will be dropped after tests
+      - POSTGRES_DB=customs_db
+
 # 8. pgadmin4
   db-pgadmin4:
     image: dpage/pgadmin4:9.17
@@ -239,6 +245,8 @@ services:
       - data-net
     ports:
     - "5080:80"
+    volumes:
+      - ./step_04_postgres_datamart:/var/lib/pgadmin/storage
     environment:
     # IT'S A LOCAL TEST, NOT A PROD
       - PGADMIN_DEFAULT_EMAIL=officeguy@admin.com
