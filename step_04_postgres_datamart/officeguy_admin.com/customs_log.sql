@@ -1,3 +1,5 @@
+-- USE customs_db
+
 --=== CAUTION
 --DROP TABLE IF EXISTS customs_log;
 

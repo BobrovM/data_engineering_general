@@ -13,6 +13,7 @@ __pycache__/
 venv/
 .venv/
 .idea
+.ipynb_checkpoints
 
 # logs
 logs
@@ -30,3 +31,5 @@ Thumbs.db
 
 customs_data.csv
 .testtrash
+/data_share/04_pg/original/
+_appdata

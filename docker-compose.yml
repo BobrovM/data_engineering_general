@@ -252,6 +252,27 @@ services:
       - PGADMIN_DEFAULT_EMAIL=officeguy@admin.com
       - PGADMIN_DEFAULT_PASSWORD=Test4321
 
+# ========== step_05_clickhouse
+# 9. clickhouse
+  clickhouse:
+    image: clickhouse:26.7.3
+    container_name: db-clickhouse
+    restart: always
+    networks:
+      - data-net
+    ports:
+      - "8123:8123"
+      - "9001:9000"
+      - "9009:9009"
+    volumes:
+      - ./step_05_clickhouse/_appdata:/var/lib/clickhouse
+      - ./data_share:/data_share
+    environment:
+      - CLICKHOUSE_DB=CH_DB
+      - CLICKHOUSE_USER=OFFICE_GUY
+      - CLICKHOUSE_PASSWORD=Test4321
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGMENT=1
+
 # ========== Net Vol
 networks:
   data-net:
