@@ -10,7 +10,8 @@ The containers are:
 5. YARN nodemanager container;
 6. Spark pyspark/jupyter container;
 7. Postgres database container;
-8. Postgres admin4 container.
+8. Postgres admin4 container;
+9. Clickhouse db container.
 
 ###### Contains:
 
