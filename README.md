@@ -32,15 +32,13 @@ The containers are:
 
 ###### In foreseeable future:
 
-6\. Data orchestration, ETL tools
+6\. Airflow
 
-7\. Airflow
+7\. Kafka
 
-8\. Kafka
+8\. NiFi
 
-9\. NiFi
+9\. Data Lake and DWH
 
-10\. Data Lake and DWH
-
-11\. Data life cycle and data quality
+10\. Data life cycle and data quality
 
