@@ -31,7 +31,10 @@
 
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:3.3.1-python3.14
+  #image: apache/airflow:3.3.1-python3.14
+  build:
+    context: .
+    dockerfile: Dockerfile
   networks:
     - data-net
   env_file:
@@ -51,6 +54,7 @@ x-airflow-common:
     AIRFLOW__API_AUTH__JWT_ISSUER: ${AIRFLOW__API_AUTH__JWT_ISSUER:-airflow}
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    #_PIP_ADDITIONAL_REQUIREMENTS: "selenium webdriver-manager"
   volumes:
     - ./step_06_airflow/dags:/opt/airflow/dags
     - ./step_06_airflow/logs:/opt/airflow/logs
