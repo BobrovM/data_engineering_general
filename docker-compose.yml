@@ -60,6 +60,7 @@ x-airflow-common:
     - ./step_06_airflow/logs:/opt/airflow/logs
     - ./step_06_airflow/config:/opt/airflow/config
     - ./step_06_airflow/plugins:/opt/airflow/plugins
+    - ./data_share:/app/data_share
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
