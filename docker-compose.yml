@@ -50,6 +50,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
+    AIRFLOW__API__SECRET_KEY: ${AIRFLOW__API__SECRET_KEY:-OG_airflow}
     AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-airflow_jwt_secret}
     AIRFLOW__API_AUTH__JWT_ISSUER: ${AIRFLOW__API_AUTH__JWT_ISSUER:-airflow}
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
@@ -61,6 +62,10 @@ x-airflow-common:
     - ./step_06_airflow/config:/opt/airflow/config
     - ./step_06_airflow/plugins:/opt/airflow/plugins
     - ./data_share:/app/data_share
+    - ./step_02_hadoop_map_reduce:/cst_scripts
+    - ./step_03_spark_aggregation:/cst_spark/spark_aggregation
+    - ./step_04_postgres_datamart:/cst_pg_preparation
+    - ./step_05_clickhouse:/cst_clickhouse #just in case
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -96,7 +101,7 @@ services:
   hdfs-namenode:
     image: apache/hadoop:3.5.0
     container_name: hdfs-namenode
-    #restart: always
+    restart: always
     hostname: hdfs-namenode
     user: root
     networks:
@@ -119,9 +124,23 @@ services:
       - HDFS-SITE.XML_dfs.namenode.name.dir=/hadoop/dfs/name
       - HDFS-SITE.XML_dfs.datanode.data.dir=/hadoop/dfs/data
     command: >
-      bash -c "if [ ! -d /hadoop/dfs/name/current ]; then
-                   hdfs namenode -format -force -nonInteractive;
-                 fi && hdfs namenode"
+      bash -c "
+        apt-get update &&
+        apt-get install -y openssh-server &&
+        mkdir -p /run/sshd &&
+        chmod 0755 /run/sshd &&
+        echo 'root:airflow123' | chpasswd &&
+        mkdir -p /root/.ssh &&
+        chmod 700 /root/.ssh &&
+        cp /scripts/k.pub /root/.ssh/authorized_keys &&
+        chmod 600 /root/.ssh/authorized_keys &&
+        sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        /usr/sbin/sshd &&
+        if [ ! -d /hadoop/dfs/name/current ]; 
+          then hdfs namenode -format -force -nonInteractive;
+        fi && hdfs namenode"
     healthcheck:
       test: ["CMD", "hdfs", "dfsadmin", "-safemode", "wait"]
       interval: 60s
@@ -132,7 +151,7 @@ services:
   hdfs-datanode:
     image: apache/hadoop:3.5.0
     container_name: hdfs-datanode
-    #restart: always
+    restart: always
     hostname: hdfs-datanode
     user: root
     networks:
@@ -163,7 +182,7 @@ services:
     image: apache/hadoop:3.5.0
     container_name: yarn-resourcemanager
     hostname: yarn-resourcemanager
-    #restart: always
+    restart: always
     user: root
     networks:
       - data-net
@@ -202,7 +221,7 @@ services:
   yarn-nodemanager:
     image: apache/hadoop:3.5.0
     container_name: yarn-nodemanager
-    #restart: always
+    restart: always
     hostname: yarn-nodemanager
     user: root
     networks:
@@ -249,7 +268,7 @@ services:
     image: jupyter/pyspark-notebook:spark-3.5.0
     container_name: spark-jupyter
     hostname: spark-jupyter
-    #restart: always
+    restart: always
     networks:
       - data-net
     ports:
@@ -299,7 +318,7 @@ services:
   db-pgadmin4:
     image: dpage/pgadmin4:9.17
     container_name: db-pgadmin4
-    #restart: always
+    restart: always
     networks:
       - data-net
     ports:
@@ -316,7 +335,7 @@ services:
   clickhouse:
     image: clickhouse:26.7.3
     container_name: db-clickhouse
-    #restart: always
+    restart: always
     networks:
       - data-net
     ports:

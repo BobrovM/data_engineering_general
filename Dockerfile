@@ -11,6 +11,15 @@ RUN apt-get update \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends google-chrome-stable \
+    && CHROME_VERSION=$$(google-chrome --version | awk '{print $$3}') \
+    && CHROME_MAJOR=$$(echo "$$CHROME_VERSION" | cut -d. -f1) \
+    && DRIVER_VERSION=$$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$$CHROME_MAJOR") \
+    && wget -q "https://storage.googleapis.com/chrome-for-testing-public/$$DRIVER_VERSION/linux64/chromedriver-linux64.zip" \
+    && unzip chromedriver-linux64.zip \
+    && mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    && chmod +x /usr/local/bin/chromedriver \
+    && rm -rf chromedriver-linux64 chromedriver-linux64.zip \
+    \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
