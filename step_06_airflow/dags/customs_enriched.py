@@ -3,6 +3,8 @@ from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator, BranchPythonOperator
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.ssh.operators.ssh import SSHOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.models import Variable
 from pathlib import Path
 import os
@@ -39,6 +41,19 @@ def _check_mdate():
         return 'put_into_hdfs'
     else:
         return 'task_no_update'
+
+
+def _PG_truncate_copy_codedescs():
+    hook = PostgresHook(postgres_conn_id='postgres_conn')
+    hook.run('TRUNCATE TABLE customs_code_desc;')
+    hook.copy_expert(
+        sql="""
+        COPY customs_code_desc (code, category)
+        FROM stdin
+        DELIMITER E'\t';
+        """,
+        filename='/app/data_share/02_mapreduce/codedescs/output_t1/part-00000'
+    )
 
 
 with DAG(
@@ -92,6 +107,8 @@ with DAG(
         /opt/hadoop/bin/hdfs dfs -rm -r -f /task1/output_t1
         bash /scripts/shell_scripts_codedescs/yarn_step1_v4.sh
         /opt/hadoop/bin/hdfs dfs -ls /task1/output_t1
+        rm -rf /data_share/02_mapreduce/codedescs/output_t1/*
+        /opt/hadoop/bin/hdfs dfs -get /task1/output_t1 /data_share/02_mapreduce/codedescs
         """
     )
 
@@ -148,10 +165,29 @@ with DAG(
         /opt/hadoop/bin/hdfs dfs -rm -r -f /task1/output_lazysort
         bash /scripts/shell_scripts_lazysort/yarn_step_lazysort_v4.sh
         /opt/hadoop/bin/hdfs dfs -ls /task1/output_lazysort
+        rm -rf /scripts/results_from_hdfs_lazysort_FINAL_OUTPUT/output_lazysort/*
         /opt/hadoop/bin/hdfs dfs -get /task1/output_lazysort /scripts/results_from_hdfs_lazysort_FINAL_OUTPUT
+        """
+    )
+
+    PG_truncate_copy_codedescs = PythonOperator(
+        task_id='PG_truncate_copy_codedescs',
+        python_callable=_PG_truncate_copy_codedescs
+    )
+
+    PG_update_customs_log = SQLExecuteQueryOperator(
+        task_id='PG_update_customs_log',
+        conn_id='postgres_conn',
+        sql="""
+        UPDATE customs_log cl
+        SET
+	        category = cc.category
+        FROM customs_code_desc cc
+        WHERE SUBSTRING(cl.code FROM 1 FOR 4) = cc.code;
         """
     )
 
 
 check_mdate >> [task_no_update, put_into_hdfs]
 put_into_hdfs >> run_mapreduce_codedescs >> run_mapreduce_history >> run_mapreduce_lazysort
+run_mapreduce_codedescs >> PG_truncate_copy_codedescs >> PG_update_customs_log
