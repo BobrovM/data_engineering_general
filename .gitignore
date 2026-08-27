@@ -33,3 +33,4 @@ customs_data.csv
 .testtrash
 /data_share/04_pg/original/
 _appdata
+/step_06_airflow/dags/.training/
