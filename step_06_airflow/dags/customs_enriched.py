@@ -66,8 +66,8 @@ with DAG(
         ssh_conn_id='hdfs-namenode-ssh',
         command="""
         export JAVA_HOME=/opt/java/openjdk
-        /opt/hadoop/bin/hdfs dfs -mkdir /TESTSSH
-        /opt/hadoop/bin/hdfs dfs -ls /
+        /opt/hadoop/bin/hdfs dfs -put -f /data_share/06_airflowed_tnved/'TNVED3_DECODED.TXT' /task1/input
+        /opt/hadoop/bin/hdfs dfs -ls /task1/input
         """,
     )
 
