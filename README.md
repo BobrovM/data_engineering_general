@@ -27,12 +27,12 @@ The containers are:
 (parquet -> csv -> copy to PG, 26.000.000 rows, 10GBs of data)
 5. **Clickhouse** table as a mirror of a **Postgres** table and redesigned analitycal view table for **Clickhouse** sql  
 (temporary table on ENGINE = PostgreSQL -> data copy into same table on ENGINE = MergeTree(), redesigned view from postgres)
-
+6. **Airflow** DAGs, first one of which orchestrate the check for an updated version of TNVED3 codes through **Selenium** and downloads a new version with additional decoding if the date of the relevance date is updated, and after that the second one launches **MapReduce** jobs in **Hadoop** + **HDFS** through SSH with loading one of step's results into **Postgres** for updating the enrichment data.  
+(DAG 1 (@daily): Site's frontend -> Selenium scraping -> Date comparison with Airflow variable -> Download through requests with zipfile unzipping and decoding data from cp866 with saving on disk)  
+(DAG 2 (@daily): Checks file modification date -> Date comparison with Airflow variable -> Puts file into HDFS -> runs MapReduce jobs through SSH -> updates data in Postgres with the results)
 
 
 ###### In foreseeable future:
-
-6\. Airflow
 
 7\. Kafka
 
