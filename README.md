@@ -1,8 +1,5 @@
 # DATA ENGINEERING (course)
-
-As of 02 August 2026, everything is now in docker containers.
 The containers are:
-
 1. Python script container;
 2. HDFS namenode container;
 3. HDFS datanode container;
@@ -12,9 +9,17 @@ The containers are:
 7. Postgres database container;
 8. Postgres admin4 container;
 9. Clickhouse db container.
+10. Redis container;
+11. Airflow-apiserver container;
+12. Airflow-scheduler container;
+13. Airflow-dag-processor container;
+14. Airflow-worker container;
+15. Airflow-triggerer container;
+16. Airflow-init container;
+17. Airflow-cli container;
+18. Flower container.
 
 ###### Contains:
-
 1. **Python** data ingestion  
 (Getting **customs import/export data** through REST API with pagination and possibility of 429 timeout)  
 ((Sample can be found in **data\_share/01\_ingestion**))
@@ -33,12 +38,7 @@ The containers are:
 
 
 ###### In foreseeable future:
-
 7\. Kafka
-
 8\. NiFi
-
 9\. Data Lake and DWH
-
 10\. Data life cycle and data quality
-
