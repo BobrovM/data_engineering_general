@@ -601,6 +601,25 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+# ========== step_07_spark_aggregation
+# 19. Kafka KRaft
+  kafka_kraft:
+    image: confluentinc/confluent-local:8.0.7
+    container_name: kafka
+    restart: always
+    networks:
+      - data-net
+    ports:
+      - "9091:9091"
+      - "9092:9092"
+      - "9093:9093"
+    volumes:
+      - ./data_share:/data_share
+      - ./step_07_kafka/else:/else
+      - ./step_07_kafka/data:/var/lib/kafka/data
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME=localhost
+
 # ========== Net Vol
 networks:
   data-net:
